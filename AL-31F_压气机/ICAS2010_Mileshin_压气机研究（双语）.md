@@ -11,6 +11,8 @@ source: ICAS 2010 (27th International Congress of the Aeronautical Sciences), Pa
 author: Mileshin, Orekhov, Pankov, Stepanov (CIAM)
 ---
 
+> **原文PDF**：[[ICAS2010_Mileshin_412.pdf]]
+
 # 高负荷高压压气机典型中间级模型的数值与试验研究
 # Numerical and Experimental Investigations of a High-Loaded Typical Middle Stage Model of HPC
 

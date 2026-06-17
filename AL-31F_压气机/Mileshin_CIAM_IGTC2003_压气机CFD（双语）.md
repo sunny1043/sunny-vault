@@ -11,6 +11,8 @@ source: IGTC 2003 Tokyo TS-043 / CIAM (Central Institute of Aviation Motors)
 author: Victor I. Mileshin, Andrew N. Startsev, Igor K. Orekhov
 ---
 
+> **原文PDF**：[[Mileshin_CIAM_IGTC2003_CFD_Compressor.pdf]]
+
 # 8:1 增压比离心压气机的CFD设计
 # CFD Design of a 8:1 Pressure Ratio Centrifugal Compressor
 

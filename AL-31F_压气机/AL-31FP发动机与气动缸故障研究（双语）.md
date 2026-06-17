@@ -12,6 +12,8 @@ author: Kamalakanta Mohapatra (VT No-1902)
 guide: R.G. Mishra & Shibendu Sen (620-Assembly Shop, SED)
 ---
 
+> **原文PDF**：[[STUDYOFAL31FPENGINEMANUFACTURINGASSEMBLYANDTESTING.pdf]]
+
 # AL-31FP 发动机熟悉化及 TVC 喷管气动缸故障研究
 # Familiarization on "AL-31FP" Engine and Research Work on Failures of Pneumatic Cylinder in TVC Nozzle
 

@@ -11,6 +11,8 @@ source: NASA (N92-22511, NASA Lewis Research Center, 1987)
 author: Neal T. Saunders, David N. Bowditch
 ---
 
+> **原文PDF**：[[NASA_aeropropulsion_42813208.pdf]]
+
 # NASA 航空推进技术的影响与前景
 # Impact and Promise of NASA Aeropropulsion Technology
 
