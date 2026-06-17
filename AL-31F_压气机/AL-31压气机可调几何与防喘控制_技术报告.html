@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AL-31 压气机可调几何与防喘控制 · 技术分析报告</title>
+<style>
+/* === CYBERPUNK TECH REPORT DESIGN === */
+:root {
+    --bg:            #0000D2;
+    --bg-deep:       #0000B8;
+    --bg-card:       rgba(255,255,255,0.14);
+    --bg-card-hover: rgba(255,255,255,0.24);
+    --bg-panel:      rgba(255,255,255,0.22);
+    --text:          #FFFFFF;
+    --text-dim:      rgba(255,255,255,0.68);
+    --text-faint:    rgba(255,255,255,0.45);
+    --accent:        #EDFF45;
+    --accent-cyan:   #00FFFF;
+    --accent-dim:    rgba(237,255,69,0.30);
+    --accent-text:   #EDFF45;
+    --warn:          #FFB547;
+    --good:          #5BE073;
+    --bad:           #FF6B6B;
+    --rule:          rgba(255,255,255,0.22);
+    --rule-strong:   rgba(255,255,255,0.42);
+    --maxw:          1300px;
+    --rad:           10px;
+    --rad-lg:        18px;
+
+    --font-heading: "ZCOOL QingKe HuangYou", "Orbitron", "Noto Sans SC", sans-serif;
+    --font-body:    "ZCOOL QingKe HuangYou", "Noto Sans SC", sans-serif;
+    --font-ui:      "ZCOOL QingKe HuangYou", "Noto Sans SC", sans-serif;
+    --font-mono:    "Share Tech Mono", "Noto Sans SC", monospace;
+
+    --invert-bg:     #FFFFFF;
+    --invert-text:   #0000D2;
+    --invert-text-dim: #1a1a8b;
+    --invert-strong: #0000B8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 18px;
+    line-height: 1.8;
+    font-weight: 400;
+    letter-spacing: 0.03em;
+    -webkit-font-smoothing: antialiased;
+    font-synthesis: none;
+    overflow-x: clip;
+    position: relative;
+    z-index: 0;
+}
+body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 12.8rem 12.8rem;
+    mix-blend-mode: color-burn;
+    opacity: 0.20;
+}
+body::after {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 0;
+    background:
+        radial-gradient(ellipse 70% 60% at 50% 35%, transparent 40%, var(--bg-deep) 100%),
+        repeating-linear-gradient(
+            0deg,
+            transparent, transparent 2px,
+            rgba(237,255,69,0.015) 2px, rgba(237,255,69,0.015) 4px
+        );
+    opacity: 0.55;
+}
+
+header, nav, main, footer, .content-wrap { position: relative; z-index: 1; }
+
+::selection { background: var(--accent); color: #0000D2; }
+a { color: var(--accent-text); text-decoration: none; transition: opacity 200ms ease-out; }
+a:hover { opacity: 0.8; text-decoration: underline; }
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 16px; }
+
+header.hero {
+    padding: 56px 16px 44px;
+    text-align: center;
+    background:
+        radial-gradient(900px 300px at 50% -20%, rgba(237,255,69,0.07), transparent 60%),
+        radial-gradient(700px 200px at 30% 80%, rgba(0,255,255,0.04), transparent 50%),
+        linear-gradient(180deg, rgba(0,0,210,0.6), transparent);
+    border-bottom: 1px solid var(--rule);
+}
+header.hero .wrap { max-width: var(--maxw); }
+.kicker {
+    font-family: var(--font-heading); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--accent-text); margin-bottom: 12px;
+    text-shadow: 0 0 30px rgba(237,255,69,0.2);
+}
+h1 {
+    font-family: var(--font-heading);
+    font-size: clamp(3.5rem, 8vw, 6.5rem); font-weight: 700;
+    line-height: 1.06; letter-spacing: 0.10em;
+    margin: 0 0 14px; color: #FFFFFF;
+    text-shadow: 0 0 40px rgba(237,255,69,0.15), 0 0 80px rgba(237,255,69,0.08);
+}
+.sub {
+    font-family: var(--font-body); font-size: 18px; font-weight: 400;
+    letter-spacing: 0.03em; color: var(--text-dim);
+    max-width: 800px; margin: 0 auto; line-height: 1.8;
+}
+
+.meta {
+    margin-top: 20px; font-family: var(--font-heading); font-size: 14px;
+    letter-spacing: 0.05em; color: var(--text-faint);
+    border-top: 1px solid var(--rule); padding-top: 14px; display: inline-block;
+}
+
+nav.toc {
+    position: sticky; top: 0; z-index: 20;
+    background: rgba(0,0,210,0.88);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--rule);
+}
+nav.toc .wrap { display: flex; gap: 4px; flex-wrap: wrap; padding: 10px 16px; max-width: var(--maxw); }
+nav.toc a {
+    font-family: var(--font-ui); color: var(--text-dim); font-size: 13px; font-weight: 500;
+    padding: 4px 12px; border-radius: 20px; border: 1px solid transparent;
+    white-space: nowrap; transition: all 150ms cubic-bezier(0.4,0,0.2,1);
+}
+nav.toc a:hover { color: #FFFFFF; border-color: var(--rule); background: var(--bg-card); text-decoration: none; }
+
+main.wrap { padding-top: 0; }
+section { padding: 44px 0; border-bottom: 1px solid var(--rule); position: relative; }
+section::after {
+    content: "";
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    opacity: 0.35;
+    transition: opacity 0.3s ease, width 0.3s ease;
+}
+section:hover::after {
+    opacity: 0.7;
+    width: 100px;
+}
+
+h2 {
+    font-family: var(--font-heading);
+    font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 700;
+    line-height: 1.18; letter-spacing: 0.06em;
+    margin: 0 0 18px; display: flex; align-items: baseline; gap: 14px;
+    color: #FFFFFF;
+}
+h2 .num {
+    font-family: var(--font-heading); font-size: 20px; font-weight: 700;
+    color: var(--accent-text); font-variant-numeric: tabular-nums; min-width: 44px;
+    text-shadow: 0 0 20px rgba(237,255,69,0.25);
+}
+h3 {
+    font-family: var(--font-heading); font-size: 24px; font-weight: 700;
+    letter-spacing: 0.04em; margin: 24px 0 14px;
+    color: #FFFFFF; line-height: 1.3;
+}
+
+/* === CONTENT WRAP (white text box on blue) === */
+.content-wrap {
+    background: var(--invert-bg);
+    border: 1px solid var(--rule-strong);
+    border-radius: 14px;
+    padding: 28px 30px;
+    color: var(--invert-text);
+    margin: 0 0 24px;
+    font-size: 18px;
+    line-height: 1.8;
+    letter-spacing: 0.03em;
+    box-shadow:
+        0 4px 20px rgba(0,0,0,0.12),
+        0 1px 4px rgba(0,0,0,0.08);
+    transition:
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.3s ease;
+}
+.content-wrap:hover {
+    transform: translateY(-4px);
+    box-shadow:
+        0 12px 40px rgba(0,0,0,0.18),
+        0 4px 12px rgba(0,0,0,0.10);
+}
+.content-wrap p,
+.content-wrap li,
+.content-wrap .lead,
+.content-wrap .note,
+.content-wrap .disclaimer,
+.content-wrap .tbl td,
+.content-wrap .tbl th,
+.content-wrap figcaption,
+.content-wrap .slide li,
+.content-wrap ol.refs,
+.content-wrap ol.refs li,
+.content-wrap .tag {
+    font-size: 18px;
+    color: var(--invert-text);
+    line-height: 1.8;
+    letter-spacing: 0.03em;
+    font-weight: 400;
+}
+.content-wrap strong { color: var(--invert-strong); font-weight: 600; }
+.content-wrap code {
+    background: rgba(0,0,210,0.08); padding: 2px 9px; border-radius: 5px;
+    font-size: 17px; font-family: var(--font-mono); color: var(--invert-text);
+}
+.content-wrap .grid { gap: 14px; }
+.content-wrap .g2 { grid-template-columns: 1fr 1fr; }
+.content-wrap .g3 { grid-template-columns: repeat(3, 1fr); }
+
+.content-wrap .card {
+    background: rgba(255,255,255,0.6); border: 1px solid var(--rule-strong); border-radius: var(--rad);
+    padding: 20px 24px; transition: all 200ms ease-out; color: var(--invert-text);
+}
+.content-wrap .card:hover {
+    background: rgba(255,255,255,0.8); box-shadow: 0 6px 24px rgba(0,0,0,0.15); transform: translateY(-4px);
+}
+.content-wrap .card h4 {
+    font-family: var(--font-heading); margin: 0 0 6px; font-size: 19px;
+    color: var(--invert-text); font-weight: 700; letter-spacing: 0.04em;
+}
+.content-wrap .card p {
+    margin: 6px 0; font-size: 16px; letter-spacing: 0.03em;
+    color: var(--invert-text-dim); line-height: 1.65; font-weight: 400;
+}
+.content-wrap .card strong { color: var(--invert-strong); font-weight: 600; }
+.content-wrap .kfig {
+    font-family: var(--font-heading); font-size: 32px; font-weight: 700;
+    color: var(--invert-text); line-height: 1.1; margin-bottom: 6px;
+}
+
+.content-wrap .note {
+    border-left: 4px solid var(--accent);
+    background: rgba(255,255,255,0.4); padding: 18px 22px;
+    border-radius: 0 var(--rad) var(--rad) 0;
+    margin: 16px 0;
+    border: 1px solid var(--rule-strong); border-left-width: 4px;
+    color: var(--invert-text); font-size: 17px; line-height: 1.7; font-weight: 400;
+}
+.content-wrap .note strong { color: var(--invert-strong); font-weight: 600; }
+.content-wrap .warn { border-left-color: var(--warn); }
+
+.content-wrap .tbl {
+    width: 100%; border-collapse: collapse; margin: 16px 0;
+    overflow: hidden; border-radius: var(--rad);
+}
+.content-wrap .tbl th, .content-wrap .tbl td {
+    border: 1px solid var(--rule-strong); padding: 12px 16px;
+    text-align: left; vertical-align: top;
+}
+.content-wrap .tbl th {
+    background: var(--bg-panel); font-family: var(--font-heading);
+    font-weight: 700; color: #FFFFFF; font-size: 17px; letter-spacing: 0.05em;
+}
+.content-wrap .tbl td { background: rgba(255,255,255,0.5); }
+.content-wrap .tbl tr:nth-child(even) td { background: rgba(255,255,255,0.75); }
+.content-wrap .tbl td strong { color: var(--invert-strong); font-weight: 600; }
+.content-wrap .tbl sup.ref { font-size: 14px; }
+.content-wrap .tbl sup.ref a { color: var(--invert-text); }
+
+.content-wrap figure {
+    margin: 20px 0; background: rgba(255,255,255,0.4);
+    border: 1px solid var(--rule); border-radius: var(--rad-lg); padding: 20px;
+}
+.content-wrap figcaption {
+    margin-top: 12px; text-align: center;
+}
+
+.content-wrap sup.ref {
+    font-family: var(--font-heading); font-weight: 700; font-size: 14px; cursor: pointer;
+}
+.content-wrap sup.ref a { color: var(--invert-text); }
+
+.content-wrap ol.refs li::marker {
+    font-family: var(--font-ui);
+    color: var(--accent-text);
+    font-weight: 700;
+}
+
+.content-wrap .tag {
+    display: inline-block;
+    border: 1px solid var(--rule); border-radius: 20px;
+    padding: 3px 12px; margin: 2px 6px 2px 0;
+    background: rgba(255,255,255,0.5);
+}
+
+.content-wrap .slide {
+    background: rgba(255,255,255,0.5); border: 1px solid var(--rule-strong); border-radius: var(--rad);
+    padding: 18px 22px; margin: 14px 0; transition: all 200ms ease-out; color: var(--invert-text);
+}
+.content-wrap .slide:hover {
+    background: rgba(255,255,255,0.7); box-shadow: 0 6px 24px rgba(0,0,0,0.15); transform: translateY(-4px);
+}
+.content-wrap .slide .sn {
+    font-weight: 700; font-size: 14px; letter-spacing: 0.08em; opacity: 0.7;
+}
+.content-wrap .slide h4 {
+    font-family: var(--font-heading); margin: 4px 0 8px; font-size: 19px;
+    color: var(--invert-text); font-weight: 700; letter-spacing: 0.04em;
+}
+.content-wrap .slide ul { margin: 6px 0; }
+
+.content-wrap .disclaimer {
+    background: rgba(255,255,255,0.4); border: 1px solid var(--rule-strong); border-radius: var(--rad);
+    padding: 16px 20px; margin: 16px 0;
+}
+.content-wrap .disclaimer strong { color: var(--invert-strong); font-weight: 600; }
+footer {
+    padding: 44px 16px 60px; font-family: var(--font-ui);
+    font-size: 13px; color: var(--text-faint);
+    text-align: center; border-top: 1px solid var(--rule);
+}
+}
+
+/* === SCROLL REVEAL ANIMATION (repeatable) === */
+.content-wrap {
+    opacity: 0;
+    transform: translateY(50px) scale(0.96);
+    transition:
+        opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+        box-shadow 0.3s ease;
+}
+.content-wrap.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+.content-wrap.folded {
+    opacity: 0;
+    transform: translateY(30px) scale(0.97);
+}
+
+@media (max-width: 700px) {
+    body { font-size: 18px; }
+    header.hero { padding: 40px 12px 32px; }
+    section { padding: 28px 0; }
+    h1 { font-size: clamp(1.8rem, 7vw, 2.4rem); }
+    h2 { font-size: clamp(1.3rem, 5vw, 1.6rem); flex-wrap: wrap; }
+    h3 { font-size: 20px; }
+    .content-wrap { padding: 20px 18px; }
+    .content-wrap p, .content-wrap li { font-size: 16px; }
+    .content-wrap .tbl { font-size: 13px; }
+    .content-wrap .tbl th, .content-wrap .tbl td { padding: 7px 10px; }
+    .content-wrap .card { padding: 16px 18px; }
+    .content-wrap .note { padding: 14px 16px; }
+    .content-wrap .slide { padding: 14px 16px; }
+    .wrap { padding: 0 12px; }
+    nav.toc .wrap { padding: 8px 12px; gap: 2px; }
+    nav.toc a { font-size: 11.5px; padding: 3px 9px; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">航空发动机 · 轴流压气机技术分析</div>
+    <h1>AL-31 压气机：可调几何与防喘控制</h1>
+    <p class="sub">面向工程深度的专题技术报告 —— 从轴流压气机失稳机理出发，剖析 AL-31 双转子压气机的可调进口导叶、可调静子、级间放气三位一体防喘体系及其调节规律与控制逻辑。</p>
+    <div class="meta">编制时间：2026-06 · 资料基础：HAL Koraput 技术研究报告、HAL 气动作动筒项目报告、公开规格数据 · 含逐页演示文稿规划</div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#s1">1 概述</a>
+    <a href="#s2">2 失稳机理</a>
+    <a href="#s3">3 可调几何原理</a>
+    <a href="#s4">4 AL-31 实现</a>
+    <a href="#s5">5 控制与调节规律</a>
+    <a href="#s6">6 防冰耦合</a>
+    <a href="#s7">7 材料工艺</a>
+    <a href="#s8">8 衍生演进</a>
+    <a href="#s9">9 演示规划</a>
+    <a href="#refs">参考文献</a>
+  </div>
+</nav>
+
+<main class="wrap">
+<!-- ============ 1 概述 ============ -->
+<section id="s1">
+  <h2><span class="num">01</span>概述：为什么压气机防喘是核心技术</h2>
+  <div class="content-wrap">
+  <p class="lead">压气机是航空发动机中唯一在"逆压力梯度"下工作的部件——它要把气流压向越来越高的压力，因此天然不稳定。防喘能力直接决定发动机的加速性、抗进气畸变能力与飞行包线。</p>
+
+  <p>AL-31 是留里卡设计局（今 NPO Saturn）为苏-27 研制的双转子加力涡扇发动机<sup class="ref"><a href="#r3">[3]</a></sup>。其压气机为<strong>全轴流 13 级、双转子布局</strong>：4 级低压压气机（LPC/风扇）+ 9 级高压压气机（HPC），总增压比 23:1<sup class="ref"><a href="#r1">[1]</a></sup><sup class="ref"><a href="#r3">[3]</a></sup>。要在如此高的增压比下覆盖从地面慢车到高空大马赫数的宽广工况，压气机必须解决一个根本矛盾：</p>
+
+  <div class="note">
+    <strong>核心矛盾：</strong>压气机的几何（叶片角度、流通面积）是按某一个"设计点"优化的；一旦偏离设计转速，各级之间的流量—转速匹配就会破坏，前面级容易"堵"、后面级容易"喘"，导致旋转失速乃至喘振。<strong>可调几何 + 放气</strong>正是用来在变工况下重建这种匹配、把工作线压在喘振边界之下的手段。
+  </div>
+
+  <div class="grid g3">
+    <div class="card"><div class="kfig">23:1</div><h4>总增压比</h4><p>4 级 LPC（≈3.5:1）× 9 级 HPC（≈6.6:1）<sup class="ref"><a href="#r1">[1]</a></sup></p></div>
+    <div class="card"><div class="kfig">2 轴</div><h4>双转子</h4><p>LP/HP 转速独立，本身即是重要的稳定性手段<sup class="ref"><a href="#r3">[3]</a></sup></p></div>
+    <div class="card"><div class="kfig">3 重</div><h4>防喘手段</h4><p>可调 IGV + 可调 HPC 静子 + 中间机匣放气<sup class="ref"><a href="#r1">[1]</a></sup><sup class="ref"><a href="#r2">[2]</a></sup></p></div>
+  </div>
+
+  <p>本报告的主线：先建立失稳机理与压气机特性图的语言（第 2 节），再讲清可调几何"为什么有效"的气动原理（第 3 节），然后落到 AL-31 的具体实现（第 4 节）与控制调节规律（第 5 节），最后给出材料工艺、衍生演进与一份可直接使用的演示文稿规划。</p>
+  </div>
+</section>
+
+<!-- ============ 2 失稳机理 ============ -->
+<section id="s2">
+  <h2><span class="num">02</span>轴流压气机失稳机理</h2>
+  <div class="content-wrap">
+  <p class="lead">理解防喘，先理解压气机为什么会失稳：旋转失速与喘振，以及它们在压气机特性图上的位置。</p>
+
+  </div>
+  <h3>2.1 叶栅攻角与失速的本质</h3>
+  <div class="content-wrap">
+  <p>压气机每一级的转子叶片本质上是一排"机翼"。气流进入叶片的<strong>攻角（迎角）</strong>由轴向速度 <code>C<sub>a</sub></code> 与叶片切向速度 <code>U</code> 合成的相对速度方向决定。设计点上攻角最优；当转速下降或流量变化时，速度三角形改变，攻角偏离最优：</p>
+  <ul>
+    <li><strong>攻角过大</strong>（低转速、流量偏小）→ 叶背气流分离 → <strong>失速</strong>；</li>
+    <li><strong>攻角过小甚至负攻角</strong>（高转速、流量偏大）→ 叶盆分离、流通"堵塞"（choke）。</li>
+  </ul>
+
+  <figure>
+    <svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
+      <style>.lbl{fill:#9fb0c0;font-size:12px}.lbl2{fill:#e6edf3;font-size:12.5px;font-weight:700}.vec{stroke-width:2.4;fill:none}</style>
+      <!-- design point triangle -->
+      <text x="115" y="24" class="lbl2" text-anchor="middle">设计点：攻角最优 i ≈ i_opt</text>
+      <line x1="40" y1="180" x2="40" y2="80" class="vec" stroke="#4ea1ff"/>
+      <line x1="40" y1="180" x2="190" y2="180" class="vec" stroke="#ffb547"/>
+      <line x1="40" y1="80" x2="190" y2="180" class="vec" stroke="#3fb950"/>
+      <text x="20" y="135" class="lbl">Ca</text>
+      <text x="110" y="198" class="lbl">U</text>
+      <text x="128" y="118" class="lbl">W</text>
+      <rect x="150" y="92" width="44" height="12" fill="#2a3a4d" transform="rotate(-12 172 98)"/>
+      <text x="205" y="100" class="lbl">叶片</text>
+      <!-- low speed: high incidence -->
+      <text x="400" y="24" class="lbl2" text-anchor="middle">低转速：Ca↓ → 攻角↑ → 叶背分离（失速）</text>
+      <line x1="330" y1="180" x2="330" y2="120" class="vec" stroke="#4ea1ff"/>
+      <line x1="330" y1="180" x2="480" y2="180" class="vec" stroke="#ffb547"/>
+      <line x1="330" y1="120" x2="480" y2="180" class="vec" stroke="#f85149"/>
+      <text x="310" y="155" class="lbl">Ca↓</text>
+      <text x="400" y="198" class="lbl">U</text>
+      <text x="418" y="142" class="lbl">W</text>
+      <rect x="440" y="92" width="44" height="12" fill="#2a3a4d" transform="rotate(-12 462 98)"/>
+      <path d="M495 96 q22 8 18 40" stroke="#f85149" fill="none" stroke-width="2" stroke-dasharray="3 3"/>
+      <text x="520" y="150" class="lbl" fill="#f85149">分离涡</text>
+      <!-- map mini -->
+      <text x="650" y="24" class="lbl2" text-anchor="middle">失速沿叶高传播</text>
+      <circle cx="650" cy="130" r="48" fill="none" stroke="#27313d" stroke-width="2"/>
+      <path d="M650 130 L650 82 A48 48 0 0 1 690 108 Z" fill="rgba(248,81,73,.25)" stroke="#f85149"/>
+      <text x="650" y="200" class="lbl" text-anchor="middle">失速团逆转向传播</text>
+    </svg>
+    <figcaption>图 1　速度三角形随转速变化：轴向速度下降使转子攻角增大，超过临界值即发生叶背气流分离，形成失速团并沿圆周传播（旋转失速）。</figcaption>
+  </figure>
+
+  </div>
+  <h3>2.2 旋转失速 vs. 喘振</h3>
+  <div class="content-wrap">
+  <table class="tbl">
+    <tr><th>现象</th><th>本质</th><th>表现</th><th>危害</th></tr>
+    <tr><td><strong>旋转失速</strong><br>Rotating Stall</td><td>局部失速团沿圆周以低于转子的转速传播，流量周向不均但仍是连续流</td><td>叶片交变激振、效率与增压比下降、噪声</td><td>叶片高周疲劳、可能诱发喘振</td></tr>
+    <tr><td><strong>喘振</strong><br>Surge</td><td>整个压气机轴向流量周期性中断甚至倒流的系统级振荡</td><td>低频强烈"喘息"、推力骤降、可能熄火/倒喷火</td><td>结构破坏、烧蚀，必须严格避免</td></tr>
+  </table>
+
+  </div>
+  <h3>2.3 压气机特性图与喘振边界</h3>
+  <div class="content-wrap">
+  <p>压气机性能用<strong>特性图（compressor map）</strong>描述：横轴换算流量、纵轴增压比，图上有若干等换算转速线。两条关键曲线决定了安全裕度：</p>
+  <ul>
+    <li><strong>喘振边界线（surge line）</strong>：各转速下失稳的临界点连线，其上方为禁区；</li>
+    <li><strong>工作线（working/operating line）</strong>：发动机实际稳态运行点的轨迹。</li>
+  </ul>
+  <p>两者之间的距离即<strong>喘振裕度（stall/surge margin）</strong>。变工况（尤其是中低转速与加减速过渡态）会使工作线上移、喘振边界下移，裕度被压缩——这正是可调几何要解决的核心问题。</p>
+
+  <figure>
+    <svg viewBox="0 0 760 380" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
+      <style>.ax{stroke:#3a4654;stroke-width:1.5}.axl{fill:#9fb0c0;font-size:13px}
+      .spd{stroke:#4ea1ff;stroke-width:2;fill:none}.spdl{fill:#7fb4ff;font-size:11px}</style>
+      <!-- axes -->
+      <line x1="70" y1="330" x2="720" y2="330" class="ax"/>
+      <line x1="70" y1="330" x2="70" y2="30" class="ax"/>
+      <text x="395" y="368" class="axl" text-anchor="middle">换算质量流量  ṁ√θ / δ  →</text>
+      <text x="22" y="180" class="axl" text-anchor="middle" transform="rotate(-90 22 180)">增压比 π  →</text>
+      <!-- speed lines -->
+      <path class="spd" d="M150 300 C200 290 250 250 270 200"/>
+      <path class="spd" d="M250 290 C320 278 380 235 400 175"/>
+      <path class="spd" d="M360 280 C440 265 500 215 515 150"/>
+      <path class="spd" d="M480 268 C560 250 610 195 620 125"/>
+      <text x="262" y="190" class="spdl">70%</text>
+      <text x="392" y="165" class="spdl">85%</text>
+      <text x="508" y="140" class="spdl">100%</text>
+      <text x="612" y="115" class="spdl">105%</text>
+      <!-- surge line -->
+      <path d="M270 200 L400 175 L515 150 L620 125" stroke="#f85149" stroke-width="2.6" fill="none" stroke-dasharray="6 4"/>
+      <text x="320" y="150" fill="#f85149" font-size="13" font-weight="700">喘振边界线</text>
+      <!-- working line -->
+      <path d="M200 295 C320 270 440 225 560 165" stroke="#3fb950" stroke-width="2.6" fill="none"/>
+      <text x="560" y="195" fill="#3fb950" font-size="13" font-weight="700">工作线</text>
+      <!-- margin arrow -->
+      <line x1="400" y1="220" x2="400" y2="178" stroke="#ffb547" stroke-width="2" marker-end="url(#ah)"/>
+      <defs><marker id="ah" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#ffb547"/></marker></defs>
+      <text x="410" y="205" fill="#ffb547" font-size="12.5">喘振裕度</text>
+      <!-- low speed danger -->
+      <ellipse cx="250" cy="245" rx="55" ry="30" fill="rgba(248,81,73,.10)" stroke="#f85149" stroke-dasharray="3 3"/>
+      <text x="250" y="320" fill="#f0c0bd" font-size="11.5" text-anchor="middle">中低转速区：裕度最易不足</text>
+    </svg>
+    <figcaption>图 2　压气机特性图示意。可调几何与放气的目标，就是在中低转速和过渡态把绿色工作线压低、把红色喘振边界抬高，从而恢复足够的喘振裕度（黄色）。</figcaption>
+  </figure>
+  </div>
+</section>
+
+<!-- ============ 3 可调几何原理 ============ -->
+<section id="s3">
+  <h2><span class="num">03</span>可调几何防喘的气动原理</h2>
+  <div class="content-wrap">
+  <p class="lead">可调几何（VSV/VIGV）与放气是两类互补手段：前者通过转动叶片重建攻角匹配，后者通过抽走流量解除前级堵塞。</p>
+
+  </div>
+  <h3>3.1 多级匹配问题：为什么前后级会"打架"</h3>
+  <div class="content-wrap">
+  <p>多级压气机中，空气越往后密度越大、所需流通面积越小，叶片越来越短。各级的流量系数 <code>φ = C<sub>a</sub>/U</code> 只有在设计转速下才彼此匹配。当转速下降时，后面级密度上不去、相当于"流量过大"趋于堵塞，而前面级相对"流量不足"趋于失速。结果就是：</p>
+  <ul>
+    <li><strong>前面级（含 LPC/风扇）容易失速</strong> → 需要减小其攻角；</li>
+    <li><strong>后面级容易堵塞</strong> → 需要在级间放掉一部分流量来"卸压"。</li>
+  </ul>
+
+  </div>
+  <h3>3.2 可调静子/导叶：重建攻角</h3>
+  <div class="content-wrap">
+  <p>把进口导叶（IGV）和前几级静子做成可绕自身轴线转动的叶片。低转速时把它们<strong>向"关小"方向偏转</strong>（增大预旋、减小轴向通流面积），使进入下游转子的相对气流攻角回到合理范围，从而抑制叶背分离：</p>
+  <div class="note">
+    可调叶片的作用可以理解为"给气流加一个可控的预旋"：通过改变静子出口气流角，直接改变下游转子叶片的相对来流方向（攻角），把偏离设计点的速度三角形"掰"回接近设计状态。这就是 VIGV/VSV 抬高喘振边界的本质。
+  </div>
+
+  <figure>
+    <svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
+      <style>.cap{fill:#9fb0c0;font-size:12.5px}.vane{fill:#2a3a4d;stroke:#4ea1ff;stroke-width:1.5}</style>
+      <text x="190" y="26" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle">导叶开大（高转速 / 大流量）</text>
+      <line x1="60" y1="70" x2="320" y2="70" stroke="#3a4654"/>
+      <line x1="60" y1="210" x2="320" y2="210" stroke="#3a4654"/>
+      <g>
+        <rect x="100" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(8 107 140)"/>
+        <rect x="160" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(8 167 140)"/>
+        <rect x="220" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(8 227 140)"/>
+        <rect x="280" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(8 287 140)"/>
+      </g>
+      <line x1="70" y1="140" x2="120" y2="140" stroke="#3fb950" stroke-width="2.5" marker-end="url(#a2)"/>
+      <text x="65" y="235" class="cap">流通面积大、预旋小</text>
+      <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#3fb950"/></marker></defs>
+
+      <text x="560" y="26" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle">导叶关小（低转速 / 防失速）</text>
+      <line x1="430" y1="70" x2="690" y2="70" stroke="#3a4654"/>
+      <line x1="430" y1="210" x2="690" y2="210" stroke="#3a4654"/>
+      <g>
+        <rect x="470" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(38 477 140)"/>
+        <rect x="530" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(38 537 140)"/>
+        <rect x="590" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(38 597 140)"/>
+        <rect x="650" y="100" width="14" height="80" rx="4" class="vane" transform="rotate(38 657 140)"/>
+      </g>
+      <line x1="440" y1="140" x2="478" y2="125" stroke="#ffb547" stroke-width="2.5" marker-end="url(#a3)"/>
+      <text x="435" y="235" class="cap">流通面积减小、预旋增大 → 攻角回正</text>
+      <defs><marker id="a3" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#ffb547"/></marker></defs>
+    </svg>
+    <figcaption>图 3　可调导叶/静子的工作原理：低转速时叶片转向"关小"，增大气流预旋、减小有效通流面积，使下游转子攻角回到合理区间，抑制失速。</figcaption>
+  </figure>
+
+  </div>
+  <h3>3.3 级间/涵道放气：解除后级堵塞</h3>
+  <div class="content-wrap">
+  <p>在压气机中段（AL-31 为中间机匣处）设放气口，把一部分气流引出主流道。这相当于人为增大前面级的通流量、减小后面级的负荷，使前级远离失速、后级远离堵塞。AL-31 利用双转子结构在 LPC 之后向<strong>外涵道旁路</strong>（涵道比约 0.57），这股冷气流随后用于燃烧室/涡轮冷却<sup class="ref"><a href="#r1">[1]</a></sup>。</p>
+
+  </div>
+  <h3>3.4 双转子结构本身的稳定性贡献</h3>
+  <div class="content-wrap">
+  <p>把压气机拆成转速独立的低压、高压两个转子，是更深层的"几何自适应"手段：当工况变化时，两个转子会各自找到平衡转速，<strong>转速比 n<sub>H</sub>/n<sub>L</sub> 自动调整</strong>，从而自然缓解前后级的流量失配。这也是 AL-31"能容忍进气道严重畸变、左右发动机可互换"这一特点的物理基础<sup class="ref"><a href="#r3">[3]</a></sup>。</p>
+  </div>
+</section>
+
+<!-- ============ 4 AL-31 实现 ============ -->
+<section id="s4">
+  <h2><span class="num">04</span>AL-31 的防喘体系实现</h2>
+  <div class="content-wrap">
+  <p class="lead">AL-31（以印度许可生产的 AL-31FP 为细节样本）把上述原理落实为：可调 IGV + HPC 前级可调静子 + 中间机匣放气，外加双转子布局。</p>
+
+  <table class="tbl">
+    <tr><th>部件</th><th>级数 / 数量</th><th>可调性</th><th>说明</th></tr>
+    <tr><td>进口导叶 IGV（LPC 前）</td><td>约 23 片可动叶片</td><td><strong>可调</strong>，约 −30°~0°</td><td>随飞行速度/高度由电传控制自动调节进口流通面积<sup class="ref"><a href="#r2">[2]</a></sup></td></tr>
+    <tr><td>低压压气机 LPC（风扇）</td><td>4 级轴流，π≈3.5:1</td><td>转子不可调</td><td>钛合金叶片；后接外涵旁路<sup class="ref"><a href="#r1">[1]</a></sup></td></tr>
+    <tr><td>高压压气机 HPC</td><td>9 级轴流，π≈6.6:1</td><td><strong>前几级静子可调</strong></td><td>第 1、2（部分资料含第 3）级静子可变攻角，引导 HPC 进气<sup class="ref"><a href="#r1">[1]</a></sup><sup class="ref"><a href="#r2">[2]</a></sup></td></tr>
+    <tr><td>中间机匣</td><td>LPC 与 HPC 之间</td><td>放气 / 旁路</td><td>涵道比≈0.57；内置中央锥齿轮传动；发动机吊挂点<sup class="ref"><a href="#r1">[1]</a></sup></td></tr>
+  </table>
+
+  <div class="note warn">
+    <strong>关于可调静子级数的资料差异：</strong>HAL 实习报告正文称"HPC 前 3 级静子可调"<sup class="ref"><a href="#r1">[1]</a></sup>，而 HAL 气动作动筒项目报告与部分条目记为"第 1、2 级静子可调"<sup class="ref"><a href="#r2">[2]</a></sup>。两者均确认存在 IGV + HPC 前级可调静子的多排可调几何；具体级数以官方技术文件为准，演示时建议表述为"HPC 前 2–3 级静子可调"。
+  </div>
+
+  </div>
+  <h3>4.1 可调进口导叶（VIGV）</h3>
+  <div class="content-wrap">
+  <p>LPC 进口的约 23 片导叶可在 −30°~0° 范围内转动，改变 LPC 进口有效流通面积与预旋<sup class="ref"><a href="#r2">[2]</a></sup>。其角度并非人工设定，而是由<strong>电传（fly-by-wire）控制单元根据飞行速度、高度自动调度</strong><sup class="ref"><a href="#r1">[1]</a></sup>。导叶为中空结构，兼作防冰热气通道（见第 6 节）。</p>
+
+  </div>
+  <h3>4.2 高压压气机可调静子（VSV）</h3>
+  <div class="content-wrap">
+  <p>HPC 转子因转速高不做可调，但<strong>前 2–3 级静子做成可变攻角</strong>，在高换算转速差异下引导进入 HPC 的气流，扩大其喘振裕度<sup class="ref"><a href="#r1">[1]</a></sup>。多排可调静子通常由同一套联动机构（作动筒 + 联动环 + 摇臂）统一驱动，按调节规律联动偏转。</p>
+
+  </div>
+  <h3>4.3 中间机匣与放气旁路</h3>
+  <div class="content-wrap">
+  <p>中间机匣是结构与气动的枢纽：支撑 HPC/LPC 机匣、作为发动机吊挂点，并在此实现 LPC 压缩空气向外涵的旁路（涵道比≈0.57）<sup class="ref"><a href="#r1">[1]</a></sup>。这股旁路冷气既参与防喘（卸除后级负荷），又经热交换器用于燃烧室/涡轮冷却，体现了"防喘—冷却"功能的一体化设计。机匣内还集成中央锥齿轮传动，HPC 转子达约 40% 转速时切换到涡轮自持<sup class="ref"><a href="#r1">[1]</a></sup>。</p>
+
+  <figure>
+    <svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" font-family="inherit">
+      <style>.box{fill:#1b2430;stroke:#27313d;stroke-width:1.5;rx:6}.t{fill:#e6edf3;font-size:12.5px;text-anchor:middle}.tm{fill:#9fb0c0;font-size:11px;text-anchor:middle}</style>
+      <!-- flow path -->
+      <line x1="20" y1="130" x2="740" y2="130" stroke="#3a4654" stroke-dasharray="4 4"/>
+      <!-- IGV -->
+      <rect x="40" y="95" width="70" height="70" rx="6" fill="#1b2430" stroke="#4ea1ff" stroke-width="1.8"/>
+      <text x="75" y="125" class="t">可调IGV</text><text x="75" y="143" class="tm">23片</text>
+      <!-- LPC -->
+      <rect x="130" y="90" width="120" height="80" rx="6" fill="#1b2430" stroke="#27313d"/>
+      <text x="190" y="120" class="t">LPC 4级</text><text x="190" y="138" class="tm">π≈3.5</text>
+      <!-- intermediate casing -->
+      <rect x="270" y="80" width="120" height="100" rx="6" fill="#141b24" stroke="#ffb547" stroke-width="1.8"/>
+      <text x="330" y="112" class="t">中间机匣</text><text x="330" y="130" class="tm">放气/旁路</text><text x="330" y="146" class="tm">中央锥齿轮</text>
+      <!-- bypass arrow -->
+      <path d="M330 80 q0 -40 90 -40 l250 0" stroke="#4ea1ff" stroke-width="2" fill="none" marker-end="url(#bp)"/>
+      <text x="540" y="32" fill="#7fb4ff" font-size="12">外涵旁路（涵道比≈0.57）→ 冷却</text>
+      <defs><marker id="bp" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#4ea1ff"/></marker></defs>
+      <!-- HPC -->
+      <rect x="410" y="90" width="150" height="80" rx="6" fill="#1b2430" stroke="#4ea1ff" stroke-width="1.8"/>
+      <text x="485" y="116" class="t">HPC 9级</text><text x="485" y="134" class="tm">前2–3级静子可调</text><text x="485" y="150" class="tm">π≈6.6</text>
+      <!-- combustor -->
+      <rect x="580" y="95" width="120" height="70" rx="6" fill="#1b2430" stroke="#f85149" stroke-width="1.4"/>
+      <text x="640" y="125" class="t">环形燃烧室</text><text x="640" y="143" class="tm">28喷嘴</text>
+      <!-- main flow arrows -->
+      <line x1="115" y1="130" x2="128" y2="130" stroke="#3fb950" stroke-width="2.5" marker-end="url(#mf)"/>
+      <line x1="255" y1="130" x2="268" y2="130" stroke="#3fb950" stroke-width="2.5" marker-end="url(#mf)"/>
+      <line x1="395" y1="130" x2="408" y2="130" stroke="#3fb950" stroke-width="2.5" marker-end="url(#mf)"/>
+      <line x1="565" y1="130" x2="578" y2="130" stroke="#3fb950" stroke-width="2.5" marker-end="url(#mf)"/>
+      <defs><marker id="mf" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#3fb950"/></marker></defs>
+      <text x="380" y="235" class="tm">蓝框=可调几何部位　黄框=放气枢纽　绿箭=主流　蓝箭=旁路</text>
+    </svg>
+    <figcaption>图 4　AL-31 压气机气路与防喘部位布置：进口可调 IGV、HPC 前级可调静子、中间机匣放气旁路，三者协同构成防喘体系。</figcaption>
+  </figure>
+  </div>
+</section>
+
+<!-- ============ 5 控制与调节规律 ============ -->
+<section id="s5">
+  <h2><span class="num">05</span>控制系统与调节规律</h2>
+  <div class="content-wrap">
+  <p class="lead">可调几何要"自动、连续、按规律"地随工况调度，才能始终把工作线压在喘振边界之下。</p>
+
+  </div>
+  <h3>5.1 调节参数：换算转速</h3>
+  <div class="content-wrap">
+  <p>可调叶片角度的调度量通常是<strong>换算转速</strong> <code>n/√T<sub>1</sub></code>（T₁ 为压气机进口总温）。这是因为压气机的气动相似性由换算转速决定——同一物理转速在不同进气温度下对应不同的气动工况。控制系统按预先标定的<strong>调节规律（schedule）</strong>把 IGV/VSV 角度映射为换算转速（及进口温度）的函数：</p>
+  <ul>
+    <li>低换算转速 → 叶片关小（大预旋），抬高低速喘振边界；</li>
+    <li>接近设计点 → 叶片打开到设计角，使效率最优；</li>
+    <li>加速过渡态 → 配合放气，避免工作线瞬时冲过喘振边界。</li>
+  </ul>
+
+  </div>
+  <h3>5.2 AL-31 的实现路径</h3>
+  <div class="content-wrap">
+  <p>AL-31FP 的可调 IGV 由<strong>电传（fly-by-wire）控制单元</strong>根据飞行速度与高度自动调节<sup class="ref"><a href="#r1">[1]</a></sup>。HAL 气动作动筒项目报告还显示，类似的气动作动筒/作动机构被用于几何调节与矢量喷管控制<sup class="ref"><a href="#r2">[2]</a></sup>。在更新的衍生型（AL-41F1/117 系列）上，几何调度与整机控制进一步整合进<strong>FADEC 全权数字控制</strong>，并与飞机飞控耦合<sup class="ref"><a href="#r3">[3]</a></sup>。</p>
+
+  </div>
+  <h3>5.3 防喘控制的多重协同</h3>
+  <div class="content-wrap">
+  <table class="tbl">
+    <tr><th>手段</th><th>作用工况</th><th>对特性图的影响</th></tr>
+    <tr><td>可调 IGV（−30°~0°）</td><td>全包线，尤其中低转速</td><td>抬高前级喘振边界、匹配进气</td></tr>
+    <tr><td>HPC 前级可调静子</td><td>高压转子变转速</td><td>扩大 HPC 喘振裕度</td></tr>
+    <tr><td>中间机匣放气/旁路</td><td>起动、慢车、加速过渡</td><td>降低工作线、解除后级堵塞</td></tr>
+    <tr><td>双转子转速自适应</td><td>全工况</td><td>自动缓解前后级流量失配</td></tr>
+    <tr><td>燃油调节（限制加速供油率）</td><td>加减速过渡态</td><td>约束工作线上移速度，防过渡态喘振</td></tr>
+  </table>
+  <div class="note">这五者并非孤立：典型的加速过程是"放气打开 + 叶片按规律转动 + 燃油按防喘曲线给量"的协同，保证瞬态工作线全程不触喘振边界。</div>
+  </div>
+</section>
+
+<!-- ============ 6 防冰耦合 ============ -->
+<section id="s6">
+  <h2><span class="num">06</span>进气防冰与可调导叶的耦合设计</h2>
+  <div class="content-wrap">
+  <p>AL-31 的可调 IGV 不仅是气动调节件，还兼作<strong>进气防冰系统</strong>的一部分，体现了多功能一体化设计：</p>
+  <ul>
+    <li>IGV 段设有<strong>温度传感器</strong>，监测进气温度<sup class="ref"><a href="#r1">[1]</a></sup>；</li>
+    <li>当温度低到有结冰风险时，系统启动防冰：把从涡轮/高压级引出的<strong>热空气</strong>通入<strong>中空导叶</strong>内腔，加热导叶与进气，防止冰层在导叶前缘聚积<sup class="ref"><a href="#r1">[1]</a></sup><sup class="ref"><a href="#r2">[2]</a></sup>。</li>
+  </ul>
+  <p>意义在于：结冰会改变导叶型面、堵塞通流面积，直接破坏压气机进气匹配并诱发失速/喘振。因此防冰本质上也是防喘体系的"边界条件保障"。</p>
+  </div>
+</section>
+
+<!-- ============ 7 材料工艺 ============ -->
+<section id="s7">
+  <h2><span class="num">07</span>压气机材料与制造工艺</h2>
+  <div class="content-wrap">
+  <p class="lead">"前钛后镍"的分段选材与精密成形工艺，是可调几何叶片能在交变载荷下长期可靠工作的基础。</p>
+  <table class="tbl">
+    <tr><th>部件</th><th>材料</th><th>工艺要点</th></tr>
+    <tr><td>可调 IGV</td><td>钛合金</td><td>锻造 + 机加；中空结构供防冰<sup class="ref"><a href="#r1">[1]</a></sup></td></tr>
+    <tr><td>LPC 叶片</td><td>钛合金</td><td>锻造毛坯 → CNC 型面、拉削、铣、磨、抛光、涂层<sup class="ref"><a href="#r1">[1]</a></sup></td></tr>
+    <tr><td>HPC 第 1 级叶片</td><td>钛合金</td><td>锻造叶片</td></tr>
+    <tr><td>HPC 第 2–9 级叶片</td><td>镍基高温合金</td><td>承受燃烧室辐射热；短叶片冷轧后矫直、修边、抛光<sup class="ref"><a href="#r1">[1]</a></sup></td></tr>
+    <tr><td>压气机轮盘</td><td>钢合金 / 高速碳化物钢</td><td>承受离心与热载荷</td></tr>
+    <tr><td>迷宫封严盘</td><td>镍基合金</td><td>位于燃烧室与压气机之间，隔热封严<sup class="ref"><a href="#r1">[1]</a></sup></td></tr>
+  </table>
+  <p>对可调叶片而言，材料与表面处理尤为关键：叶片在变角度工作中承受周期性气动力，对耐疲劳、耐磨（轴颈/衬套）与型面精度要求很高，因此普遍采用锻造 + 多道精密成形 + 涂层工艺<sup class="ref"><a href="#r1">[1]</a></sup>。</p>
+  </div>
+</section>
+
+<!-- ============ 8 衍生演进 ============ -->
+<section id="s8">
+  <h2><span class="num">08</span>压气机架构的衍生与演进</h2>
+  <div class="content-wrap">
+  <p>AL-31 的"4 级风扇 + 9 级高压"双转子压气机架构，成为后续整个 AL-41/117 系列的基础<sup class="ref"><a href="#r3">[3]</a></sup>：</p>
+  <table class="tbl">
+    <tr><th>型号</th><th>压气机布局</th><th>关键演进</th></tr>
+    <tr><td>AL-31F（基本型）</td><td>4 风扇 + 9 高压，OPR 23:1</td><td>可调 IGV + HPC 前级可调静子 + 放气<sup class="ref"><a href="#r1">[1]</a></sup><sup class="ref"><a href="#r3">[3]</a></sup></td></tr>
+    <tr><td>AL-31FP（苏-30MKI）</td><td>同上 + 推力矢量喷管（±14–15°）</td><td>HAL 许可生产，几何/矢量作动机构<sup class="ref"><a href="#r2">[2]</a></sup></td></tr>
+    <tr><td>AL-41F1S（117S，苏-35）</td><td>4 风扇 + 9 高压</td><td>风扇直径 932 mm（比 905 mm 大≈3%）、新高/低压涡轮、独立数字控制<sup class="ref"><a href="#r3">[3]</a></sup></td></tr>
+    <tr><td>AL-41F1（117，苏-57）</td><td>4 风扇 + 9 高压</td><td>增大风扇、FADEC 与飞控耦合、推力矢量<sup class="ref"><a href="#r3">[3]</a></sup></td></tr>
+  </table>
+  <p>演进主线清晰：在保持 4+9 双转子骨架的前提下，通过<strong>加大风扇直径、升级控制系统（电传→FADEC）、改进材料与涡轮</strong>挖掘潜力，而可调几何防喘体系作为成熟核心被持续沿用与精细化。</p>
+
+  <div class="disclaimer">
+    <strong>资料与口径说明：</strong>本报告聚焦压气机气动/控制原理，AL-31 具体参数与构造细节主要引自 HAL Koraput 的两份学习/项目报告及公开规格汇编（见参考文献）。其中部分数值（如可调静子级数、涵道比小数位）在不同公开资料间存在出入，已在正文标注；涉及具体型号的精确工程数据应以官方技术文件为准。本报告仅用于技术学习与教学讨论。
+  </div>
+  </div>
+</section>
+
+<!-- ============ 9 演示规划 ============ -->
+<section id="s9">
+  <h2><span class="num">09</span>演示文稿规划（逐页提纲 + 讲稿要点）</h2>
+  <div class="content-wrap">
+  <p class="lead">建议 14 页、约 20–25 分钟，面向工程/专业受众。结构遵循"问题 → 机理 → 原理 → 实现 → 控制 → 总结"的逻辑闭环。下方每页含标题、要点与讲稿提示。</p>
+
+  <div class="slide"><div class="sn">SLIDE 1 · 封面</div><h4>AL-31 压气机：可调几何与防喘控制</h4>
+    <ul><li>副标题、汇报人、日期</li><li>讲稿：一句话点题——"防喘是高增压比压气机的生命线"</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 2 · 背景与意义</div><h4>为什么压气机防喘是核心技术</h4>
+    <ul><li>压气机在逆压梯度下工作、天然不稳定；防喘决定加速性、抗畸变、飞行包线</li><li>引入 AL-31 基本参数表（23:1、双转子、112 kg/s）</li><li>讲稿：抛出"高增压比 vs 宽工况"的核心矛盾</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 3 · 失稳机理 ①</div><h4>攻角、旋转失速与喘振</h4>
+    <ul><li>速度三角形 → 攻角；旋转失速 vs 喘振对比表</li><li>配图 1（速度三角形）</li><li>讲稿：强调喘振是系统级、破坏性的</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 4 · 失稳机理 ②</div><h4>压气机特性图与喘振裕度</h4>
+    <ul><li>喘振边界线、工作线、喘振裕度；中低转速裕度最易不足</li><li>配图 2（特性图）</li><li>讲稿：把后续所有手段都归结为"压低工作线 / 抬高边界"</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 5 · 原理 ①</div><h4>多级匹配问题：前级失速 vs 后级堵塞</h4>
+    <ul><li>变转速下流量系数失配；为什么需要"转叶片"和"放气"两类手段</li><li>讲稿：这是承上启下的关键页</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 6 · 原理 ②</div><h4>可调静子/导叶如何重建攻角</h4>
+    <ul><li>预旋概念；开大/关小两种状态对比</li><li>配图 3（导叶开合）</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 7 · 原理 ③</div><h4>放气与双转子的稳定性贡献</h4>
+    <ul><li>级间/涵道放气解除后级堵塞；双转子转速自适应</li><li>讲稿：点出 AL-31 抗畸变、左右发动机可互换的物理基础</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 8 · 实现 ①</div><h4>AL-31 防喘体系总览</h4>
+    <ul><li>配图 4（气路布置）+ 部件/级数/可调性总表</li><li>讲稿：三位一体——IGV + HPC 可调静子 + 中间机匣放气</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 9 · 实现 ②</div><h4>可调 IGV 与 HPC 可调静子细节</h4>
+    <ul><li>23 片 IGV、−30°~0°；HPC 前 2–3 级静子；联动机构</li><li>注明资料口径差异</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 10 · 实现 ③</div><h4>中间机匣：放气、传动、吊挂一体</h4>
+    <ul><li>涵道比≈0.57、中央锥齿轮、40% 转速切换、放气兼冷却</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 11 · 控制</div><h4>调节规律与控制系统</h4>
+    <ul><li>换算转速 n/√T 调度；电传 → FADEC；五手段协同表</li><li>讲稿：强调加速过渡态的协同（放气+叶片+供油）</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 12 · 耦合设计</div><h4>进气防冰与可调导叶</h4>
+    <ul><li>中空导叶通热气防冰；防冰即防喘的边界保障</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 13 · 材料工艺与演进</div><h4>前钛后镍 + 架构衍生</h4>
+    <ul><li>材料表精简版；AL-31→AL-41/117 演进表</li><li>讲稿：核心架构稳定、靠风扇/控制/材料挖潜</li></ul></div>
+
+  <div class="slide"><div class="sn">SLIDE 14 · 总结 & 参考文献</div><h4>结论与问答</h4>
+    <ul><li>一句话总结：双转子 + 多排可调几何 + 放气 = 宽工况防喘</li><li>列出参考文献；致谢/Q&A</li></ul></div>
+
+  <div class="note">
+    <strong>制作建议：</strong>本 HTML 报告中的 4 张 SVG 图可直接截图用于幻灯片；每页正文配 1 张图、控制在 4–6 个要点内；颜色沿用本报告深色工程风（蓝=可调件、黄=放气、红=危险/喘振、绿=工作线/主流）以保持视觉一致。若需要，我可以把这份规划直接生成 PPTX 文件。
+  </div>
+  </div>
+</section>
+
+<!-- ============ 参考文献 ============ -->
+<section id="refs">
+  <h2><span class="num">REF</span>参考文献</h2>
+  <div class="content-wrap">
+  <ol class="refs">
+    <li id="r1"><strong>[1]</strong> Undavalli V., Bodramoni B. <em>Study of AL31FP Engine Manufacturing, Assembly &amp; Testing</em>（HAL Koraput 暑期实习研究报告，Amity University，2014/2015）. 含压气机级数、可调 IGV/静子、中间机匣、材料工艺等一手描述。 <span class="tag">主要来源</span></li>
+    <li id="r2"><strong>[2]</strong> <em>Study of Pneumatic Cylinder in TVC — AL-31FP Engine（HAL Project）</em>. 含 IGV 数量与角度范围（23 片，−30°~0°）、HPC 可调静子、作动机构等。 <span class="tag">主要来源</span></li>
+    <li id="r3"><strong>[3]</strong> "Saturn AL-31", <em>Wikipedia</em>（公开规格汇编，引用 Gordon、Rosoboronexport、United Engine Corporation 数据）. 含总体参数、双转子布局、AL-41/117 衍生型演进。 <span class="tag">规格数据</span></li>
+    <li id="r4"><strong>[4]</strong> 上传的扫描资料（Soviet 1980s AL-31 Theory of Operation Manual、Main General Drawing of early AL-31、AL-31 加力规格）—— 为图像扫描件、无可提取文字层，本报告仅作构造图示参考，未直接引用其数值。 <span class="tag">图示参考</span></li>
+    <li id="r5"><strong>[5]</strong> 轴流压气机失稳机理（攻角—速度三角形、旋转失速/喘振、压气机特性图、可调几何与放气的气动作用）属涡轮机械通用理论，本报告据公认工程原理整理，用以解释上述一手资料中的 AL-31 具体构造。 <span class="tag">通用理论</span></li>
+  </ol>
+  <p class="lead">引用约定：正文中上标 <sup class="ref">[n]</sup> 对应本节编号；未标注上标的机理性论述属通用涡轮机械理论（[5]）。涉及精确工程数值时，建议以官方/制造商技术文件复核。</p>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div>AL-31 压气机可调几何与防喘控制 · 技术分析报告 · 仅供技术学习与教学讨论</div>
+</footer>
+<script>
+(function() {
+  'use strict';
+  var wraps = document.querySelectorAll('.content-wrap');
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.classList.remove('folded');
+          e.target.classList.add('visible');
+        } else {
+          e.target.classList.remove('visible');
+          e.target.classList.add('folded');
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+    wraps.forEach(function(w) {
+      w.classList.add('folded');
+      obs.observe(w);
+    });
+  } else {
+    wraps.forEach(function(w) { w.classList.add('visible'); });
+  }
+})();
+</script>
+</body>
+</html>
