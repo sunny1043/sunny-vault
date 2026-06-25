@@ -1,6 +1,7 @@
 ---
-source_pdf: Desktop/考研数学一-线性代数/线性代数全景指南.md
+来源: 线性代数全景指南（原 PDF 已佚，依存量笔记 + 知识库重建）
 part: all
+整理日期: 2026-06-24
 keywords: moc, study-map, linear-algebra
 ---
 
@@ -10,8 +11,8 @@ keywords: moc, study-map, linear-algebra
 
 ## Overview
 - 目标: 考研数学一 线性代数满分
-- 来源: 线性代数全景指南 (683行)
-- 章节: 6章 + 考研12问
+- 形态: 6 章已按 **Sunny 精读笔记**风格重建（定义 / 性质 / 公式推导 / ASCII 图 / 物理数学核心 五件套）
+- 章节: 6 章 + 考研12问 + Practice
 
 ## 章节导航
 
@@ -36,14 +37,22 @@ Ch1 行列式 → Ch2 矩阵 → Ch3 向量空间 → Ch4 线性方程组
 ```
 
 ## Tag Index
-| Tag | 覆盖章节 |
-|-----|----------|
-| `#determinant` | Ch1 |
-| `#matrix` | Ch2 |
-| `#vector-space` | Ch3 |
-| `#linear-system` | Ch4 |
-| `#eigenvalue` | Ch5 |
-| `#quadratic-form` | Ch6 |
+| Tag | 覆盖章节 | 核心知识点 |
+|-----|----------|------------|
+| `#determinant` | Ch1 | 有向体积、七大性质、展开定理、范德蒙德、四算法 |
+| `#matrix` | Ch2 | 可逆七连环、伴随 $AA^*=\|A\|E$、断层定理、秩不等式 |
+| `#vector-space` | Ch3 | 相关性↔秩、极大无关组、基/过渡矩阵、施密特正交化 |
+| `#linear-system` | Ch4 | 秩判存在性、基础解系 $n-r$、通解=特解+齐次 |
+| `#eigenvalue` | Ch5 | 特征方程、对角化充要(几何=代数重数)、实对称三定理 |
+| `#quadratic-form` | Ch6 | 合同/相似/等价、惯性定理、正定六条件 |
+
+## 跨章主线（一条逻辑链）
+```
+行列式 |A|=0  ⇄  秩 r(A)<n  ⇄  列向量相关  ⇄  Ax=0 有非零解  ⇄  0 是特征值  ⇄  不可逆
+   Ch1            Ch2          Ch3            Ch4              Ch5         Ch2
+```
+- 实对称矩阵把 Ch5（正交对角化）与 Ch6（二次型化标准形）焊在一起。
+- 施密特正交化（Ch3）是 Ch5/Ch6 求正交矩阵 $Q$ 的前置工序。
 
 ## Related
 - [[Quick Reference]]
