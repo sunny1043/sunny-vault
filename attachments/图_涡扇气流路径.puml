@@ -1,0 +1,37 @@
+@startuml
+' 混合排气双涵道涡扇发动机气流路径
+skinparam backgroundColor white
+skinparam defaultFontName "PingFang SC"
+skinparam rectangle {
+  BackgroundColor #F4F7FB
+  BorderColor    #3B5998
+  FontColor      #1A1A1A
+  RoundCorner    8
+}
+skinparam ArrowColor #3B5998
+skinparam ArrowFontSize 12
+
+left to right direction
+
+rectangle "进气道" as inlet
+rectangle "风扇\nFan" as fan
+rectangle "高压压气机\nHPC" as hpc
+rectangle "燃烧室\nCombustor" as combust
+rectangle "涡轮\nTurbine" as turb
+rectangle "尾喷管\n(混合 → 排气)" as nozzle
+
+inlet --> fan : 进气
+fan --> hpc : 内涵
+fan --> nozzle : 外涵\n(风扇后离轴较远)
+hpc --> combust
+combust --> turb
+turb --> nozzle : 内涵排气
+nozzle --> "高速排气" : 混合
+
+note bottom of fan
+  气流在风扇后分两路:
+  内涵 (核心机) 与 外涵 (旁路)
+  于尾喷管混合后排出
+end note
+
+@enduml

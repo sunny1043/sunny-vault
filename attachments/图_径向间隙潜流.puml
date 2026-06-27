@@ -1,0 +1,29 @@
+@startuml
+' 径向间隙中的倒流/潜流 + 间隙旋涡
+skinparam backgroundColor white
+skinparam defaultFontName "PingFang SC"
+skinparam rectangle {
+  BackgroundColor #FDECEC
+  BorderColor    #C0392B
+  FontColor      #1A1A1A
+  RoundCorner    10
+}
+skinparam ArrowColor #C0392B
+skinparam ArrowFontSize 12
+
+left to right direction
+
+rectangle "叶盆\n(压力面·高压)" as pressure
+rectangle "叶背\n(吸力面·低压)" as suction
+
+pressure --> suction : 径向间隙潜流\n(高压→低压倒流)
+pressure --> "间隙旋涡" : 端壁运动时\n(端壁相对叶片移动)
+
+note bottom of suction
+  二次流损失来源之一:
+  径向间隙中的倒流 / 潜流
+  + 间隙旋涡
+  一般限制在叶片高度的 0.5% ~ 1%
+end note
+
+@enduml

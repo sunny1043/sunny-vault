@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-S 图上的火用损（㶲损）讲解</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: #f5f5f7;
+    color: #1d1d1f;
+    line-height: 1.75;
+    padding: 20px;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 26px; margin-bottom: 8px; color: #0a2540; }
+  .subtitle { color: #6b7280; margin-bottom: 24px; font-size: 15px; }
+  .card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  h2 {
+    font-size: 19px;
+    color: #0a2540;
+    margin-bottom: 12px;
+    padding-left: 10px;
+    border-left: 4px solid #2563eb;
+  }
+  h3 { font-size: 16px; color: #334155; margin: 16px 0 8px; }
+  p { margin-bottom: 10px; }
+  .formula {
+    background: #0f172a;
+    color: #e2e8f0;
+    padding: 14px 20px;
+    border-radius: 8px;
+    font-family: "Cambria Math", "Times New Roman", serif;
+    font-size: 18px;
+    text-align: center;
+    margin: 14px 0;
+    letter-spacing: 0.5px;
+  }
+  .formula .hl { color: #fbbf24; font-weight: bold; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 10px;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 4px; }
+  label { font-size: 13px; color: #475569; font-weight: 600; }
+  select, input[type=range] {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    font-size: 14px;
+  }
+  input[type=range] { padding: 0; width: 160px; }
+  .val { font-weight: bold; color: #2563eb; }
+  .chart-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+  }
+  svg { display: block; width: 100%; height: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; }
+  th, td { border: 1px solid #e2e8f0; padding: 8px 12px; text-align: center; font-size: 14px; }
+  th { background: #f1f5f9; color: #334155; }
+  .tip {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 10px 16px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  .result-box {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .result {
+    flex: 1;
+    min-width: 140px;
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: #fff;
+    padding: 14px 18px;
+    border-radius: 10px;
+    text-align: center;
+  }
+  .result .num { font-size: 24px; font-weight: bold; display: block; }
+  .result .lbl { font-size: 12px; opacity: 0.9; }
+  ul { margin-left: 22px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; }
+  .legend-item { display: inline-flex; align-items: center; gap: 6px; margin-right: 16px; font-size: 13px; }
+  .legend-color { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>T-S 图上的火用损（㶲损）可视化讲解</h1>
+  <p class="subtitle">工程热力学 · 第4章 · Gouy-Stodola 定理的图形表达</p>
+
+  <!-- 核心结论 -->
+  <div class="card">
+    <h2>一、核心结论</h2>
+    <p>火用损（㶲损）= 环境温度 × 孤立系统熵增（熵产）：</p>
+    <div class="formula">
+      I = W<sub>损失</sub> = <span class="hl">T₀</span> · <span class="hl">ΔS<sub>g</sub></span> = <span class="hl">T₀</span> · ΔS<sub>孤立系统</sub>
+    </div>
+    <p>在 T-S 图上，<b>火用损就是环境温度线 T₀ 上方、过程熵产所围的矩形面积</b>。矩形<strong>高 = T₀</strong>，<strong>宽 = 熵产 ΔS<sub>g</sub></strong>。</p>
+    <div class="legend-item"><span class="legend-color" style="background:#ef4444;opacity:0.5"></span>红色阴影 = 火用损 I 的面积</div>
+    <div class="legend-item"><span class="legend-color" style="background:#2563eb"></span>蓝色 = 实际（不可逆）过程线</div>
+    <div class="legend-item"><span class="legend-color" style="background:#10b981"></span>绿色虚线 = 理想可逆过程线</div>
+  </div>
+
+  <!-- 交互图 -->
+  <div class="card">
+    <h2>二、交互式 T-S 图</h2>
+    <p style="font-size:14px;color:#64748b;">拖动滑块改变参数，观察火用损面积如何变化。选择不同过程类型对比理解。</p>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>过程类型</label>
+        <select id="procType" onchange="update()">
+          <option value="turbine">汽轮机绝热膨胀（不可逆）</option>
+          <option value="throttle">节流过程</option>
+          <option value="heat">温差换热</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <label>环境温度 T₀ = <span class="val" id="t0val">300</span> K</label>
+        <input type="range" id="t0" min="273" max="320" value="300" oninput="update()">
+      </div>
+      <div class="control-group">
+        <label>不可逆程度（熵产）</label>
+        <input type="range" id="irr" min="0.05" max="0.6" step="0.01" value="0.25" oninput="update()">
+      </div>
+      <div class="control-group">
+        <label>显示可逆对比</label>
+        <select id="showRev" onchange="update()">
+          <option value="1">显示</option>
+          <option value="0">隐藏</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <svg id="chart" viewBox="0 0 800 480"></svg>
+    </div>
+
+    <div class="result-box">
+      <div class="result">
+        <span class="num" id="resI">—</span>
+        <span class="lbl">火用损 I = T₀·ΔS<sub>g</sub> (kJ/kg)</span>
+      </div>
+      <div class="result" style="background:linear-gradient(135deg,#10b981,#047857)">
+        <span class="num" id="resDS">—</span>
+        <span class="lbl">熵产 ΔS<sub>g</sub> (kJ/(kg·K))</span>
+      </div>
+      <div class="result" style="background:linear-gradient(135deg,#6366f1,#4338ca)">
+        <span class="num" id="resT0">—</span>
+        <span class="lbl">环境温度 T₀ (K)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 画图三步 -->
+  <div class="card">
+    <h2>三、手画作图三步法</h2>
+    <h3>第 ① 步：画环境温度线</h3>
+    <p>在 T-S 图底部画一条<strong>水平虚线</strong>，标注 T₀（通常 298 K 或 300 K，约 25°C）。这条线是火用损面积的"底边"。</p>
+
+    <h3>第 ② 步：标出熵产宽度</h3>
+    <p>找到过程<strong>初态熵 s₁</strong> 和<strong>终态熵 s₂</strong>，从 s₁、s₂ 向下投影到 T₀ 线。<strong>熵产 ΔS<sub>g</sub> 就是矩形宽度</strong>。</p>
+    <ul>
+      <li><b>绝热过程</b>（汽轮机、压缩机）：ΔS<sub>g</sub> = s₂ − s₁（工质熵增 = 熵产）</li>
+      <li><b>放热过程</b>：要算孤立系统总熵增 ΔS<sub>孤立</sub> = ΔS<sub>工质</sub> + ΔS<sub>环境</sub></li>
+    </ul>
+
+    <h3>第 ③ 步：涂阴影矩形</h3>
+    <p>在 T₀ 线上方，宽度 = ΔS<sub>g</sub>，画一个矩形涂上阴影，标 <b>I = T₀·ΔS<sub>g</sub></b>。这块面积就是火用损。</p>
+    <div class="tip">💡 <b>记忆口诀</b>：温度取环境，宽度取熵产，矩形面积即火用损。</div>
+  </div>
+
+  <!-- 不同过程 -->
+  <div class="card">
+    <h2>四、三种典型过程的火用损特征</h2>
+    <table>
+      <tr><th>过程</th><th>熵产来源</th><th>ΔS<sub>g</sub></th><th>火用损特征</th></tr>
+      <tr>
+        <td><b>汽轮机绝热膨胀</b></td>
+        <td>内部摩擦、耗散（实际熵增 > 可逆熵增）</td>
+        <td>s₂ − s₁</td>
+        <td>T₀ 线上一块窄矩形；不可逆度越大，s₂ 越右移，面积越大</td>
+      </tr>
+      <tr>
+        <td><b>节流</b></td>
+        <td>等焓降压，熵大幅增加</td>
+        <td>s₂ − s₁（较大）</td>
+        <td>过程线近乎水平向右，矩形较宽，火用损显著</td>
+      </tr>
+      <tr>
+        <td><b>温差换热</b></td>
+        <td>有限温差下传热的不可逆性</td>
+        <td>ΔS<sub>冷</sub> − |ΔS<sub>热</sub>|</td>
+        <td>热流体放热线与冷流体吸热线之间的"缝隙"面积</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>五、为什么是 T₀ 线下的矩形？</h2>
+    <p>能量中只有"高于环境温度 T₀ 的部分"才有做功能力。Gouy-Stodola 定理证明：<b>系统每产生一份熵 ΔS<sub>g</sub>，就永久损失了 T₀·ΔS<sub>g</sub> 的可用能</b>。在 T-S 图上，熵产表现为横轴的一段位移，乘以环境温度（纵坐标基准）正好是一块矩形面积。</p>
+    <div class="formula">I = T₀ · ΔS<sub>g</sub> &nbsp;&nbsp;←&nbsp;&nbsp; Gouy-Stodola 定理</div>
+    <p>单位：K × kJ/(kg·K) = <b>kJ/kg</b>（与焓、功一致）。</p>
+  </div>
+
+</div>
+
+<script>
+// ====== 坐标系参数 ======
+const W = 800, H = 480;
+const M = { l: 70, r: 30, t: 30, b: 60 };
+const PW = W - M.l - M.r, PH = H - M.t - M.b;
+
+// 当前坐标范围（动态可变）
+let TMAX = 700, TMIN = 250;
+let SMIN = 5.5, SMAX = 8.5;
+
+function line(x1,y1,x2,y2,stroke,sw,dash) {
+  let d = dash ? ` stroke-dasharray="${dash}"` : '';
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${sw||2}"${d}/>`;
+}
+function txt(t,px,py,fs,fill,anchor,rot) {
+  let a = anchor||'middle';
+  let r = rot ? ` transform="rotate(${rot} ${px} ${py})"` : '';
+  return `<text x="${px}" y="${py}" font-size="${fs||13}" fill="${fill||'#334155'}" text-anchor="${a}" font-family="sans-serif"${r}>${t}</text>`;
+}
+
+function update() {
+  const proc = document.getElementById('procType').value;
+  const T0 = +document.getElementById('t0').value;
+  const irr = +document.getElementById('irr').value; // 熵产参数
+  const showRev = document.getElementById('showRev').value === '1';
+  document.getElementById('t0val').textContent = T0;
+
+  // ===== 根据过程设定范围与状态 =====
+  let s1, T1, s2, T2, s2rev;
+  let procName;
+
+  if (proc === 'turbine') {
+    TMAX = 700; TMIN = 250; SMIN = 5.5; SMAX = 8.5;
+    T1 = 600; s1 = 6.6;
+    T2 = 320;
+    s2rev = s1;                       // 可逆绝热：s 不变
+    s2 = s1 + irr;                    // 实际：熵增
+    procName = '汽轮机绝热膨胀';
+  } else if (proc === 'throttle') {
+    TMAX = 500; TMIN = 250; SMIN = 5.5; SMAX = 9;
+    T1 = 420; T2 = 415; s1 = 6.0;
+    s2rev = s1 + 0.02;                // 节流本质不可逆，"可逆"仅作示意
+    s2 = s1 + irr * 1.8;              // 实际熵增更显著
+    procName = '节流过程';
+  } else {
+    TMAX = 600; TMIN = 250; SMIN = 5.5; SMAX = 9;
+    T1 = 550; s1 = 7.2;               // 热流体入口
+    T2 = 340;                          // 热流体出口（降温）
+    s2rev = s1 - 1.2;                 // 热流体熵减
+    s2 = s2rev;
+    procName = '温差换热';
+  }
+
+  // ===== 坐标换算函数（范围可能已变）=====
+  const X = s => M.l + (s - SMIN) / (SMAX - SMIN) * PW;
+  const Y = T => M.t + (1 - (T - TMIN) / (TMAX - TMIN)) * PH;
+
+  let svg = '';
+
+  // ===== 绘图区背景 =====
+  svg += `<rect x="${M.l}" y="${M.t}" width="${PW}" height="${PH}" fill="#fafbfc" stroke="#cbd5e1"/>`;
+
+  // ===== 网格 =====
+  for (let T = 300; T <= TMAX; T += 100) {
+    svg += line(X(SMIN), Y(T), X(SMAX), Y(T), '#e2e8f0', 1);
+  }
+
+  // ===== 坐标轴 =====
+  svg += line(X(SMIN), Y(TMIN), X(SMAX), Y(TMIN), '#334155', 2);
+  svg += line(X(SMIN), Y(TMIN), X(SMIN), Y(TMAX), '#334155', 2);
+
+  for (let T = 300; T <= TMAX; T += 100) {
+    svg += txt(T, X(SMIN)-8, Y(T)+4, 11, '#64748b', 'end');
+  }
+  for (let S = Math.ceil(SMIN); S <= SMAX; S += 0.5) {
+    svg += txt(S.toFixed(1), X(S), Y(TMIN)+16, 11, '#64748b');
+  }
+  svg += txt('S  [kJ/(kg·K)] →', X(SMAX)-40, Y(TMIN)+42, 13, '#334155');
+  svg += txt('T [K]', X(SMIN)-50, Y(TMAX)-10, 13, '#334155');
+
+  // ===== T0 环境温度线 =====
+  svg += line(X(SMIN), Y(T0), X(SMAX), Y(T0), '#ef4444', 2, '6,4');
+  svg += txt('T₀ = ' + T0 + ' K (环境温度)', X(SMAX)-10, Y(T0)-6, 12, '#ef4444', 'end');
+
+  // ===== 按过程类型绘图 =====
+  if (proc === 'turbine' || proc === 'throttle') {
+    // ---- 火用损矩形（在 T0 线上方）----
+    const rectTopT = Math.max(T2 + 10, T0 + 30);
+    const rx = X(s2rev), ry = Y(rectTopT), rw = X(s2) - X(s2rev), rh = Y(T0) - Y(rectTopT);
+    svg += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="#ef4444" fill-opacity="0.35" stroke="#ef4444" stroke-width="1.5"/>`;
+    svg += txt('I = T₀·ΔSg', rx + rw/2, ry + rh/2 + 4, 14, '#b91c1c', 'middle');
+
+    // 可逆过程线（绿色虚线）
+    if (showRev) {
+      svg += line(X(s1), Y(T1), X(s2rev), Y(T2), '#10b981', 2.5, '8,5');
+      svg += txt('可逆过程', (X(s1)+X(s2rev))/2 - 20, (Y(T1)+Y(T2))/2 - 8, 12, '#059669');
+    }
+
+    // 实际过程线（蓝色）
+    svg += line(X(s1), Y(T1), X(s2), Y(T2), '#2563eb', 3);
+    svg += txt('实际过程（不可逆）', (X(s1)+X(s2))/2 + 10, (Y(T1)+Y(T2))/2 + 18, 12, '#1e40af');
+
+    // 状态点
+    svg += `<circle cx="${X(s1)}" cy="${Y(T1)}" r="5" fill="#1e40af"/>`;
+    svg += txt('1', X(s1)-12, Y(T1)-8, 13, '#1e40af', 'middle');
+    svg += `<circle cx="${X(s2)}" cy="${Y(T2)}" r="5" fill="#1e40af"/>`;
+    svg += txt('2', X(s2)+12, Y(T2)-8, 13, '#1e40af', 'middle');
+
+    // 熵产标注
+    svg += line(X(s2rev), Y(TMIN)+2, X(s2rev), Y(TMIN)-8, '#b91c1c', 1.5);
+    svg += line(X(s2), Y(TMIN)+2, X(s2), Y(TMIN)-8, '#b91c1c', 1.5);
+    svg += line(X(s2rev), Y(TMIN)-6, X(s2), Y(TMIN)-6, '#b91c1c', 1.5);
+    svg += txt('ΔSg', (X(s2rev)+X(s2))/2, Y(TMIN)-10, 12, '#b91c1c');
+
+  } else {
+    // ===== 温差换热 =====
+    const cS1 = 6.3, cT1 = 300, cS2 = 7.8, cT2 = 480;
+
+    const dSg = Math.max((cS2 - cS1) - (s1 - s2), 0.1);
+    const rx = X(s2), rw = X(s2 + dSg) - X(s2);
+    const rectTopT = T0 + 40;
+    svg += `<rect x="${rx}" y="${Y(rectTopT)}" width="${rw}" height="${Y(T0)-Y(rectTopT)}" fill="#ef4444" fill-opacity="0.3" stroke="#ef4444" stroke-width="1.5"/>`;
+    svg += txt('I = T₀·ΔSg', rx + rw/2, Y(rectTopT) + (Y(T0)-Y(rectTopT))/2 + 4, 13, '#b91c1c');
+
+    // 热流体放热线（红）
+    svg += line(X(s1), Y(T1), X(s2), Y(T2), '#dc2626', 3);
+    svg += txt('热流体放热', X(s1)+5, Y(T1)-10, 12, '#dc2626', 'start');
+
+    // 冷流体吸热线（橙）
+    svg += line(X(cS1), Y(cT1), X(cS2), Y(cT2), '#f97316', 3);
+    svg += txt('冷流体吸热', X(cS2)-5, Y(cT2)-10, 12, '#ea580c', 'end');
+
+    svg += `<circle cx="${X(s1)}" cy="${Y(T1)}" r="5" fill="#dc2626"/>`;
+    svg += `<circle cx="${X(s2)}" cy="${Y(T2)}" r="5" fill="#dc2626"/>`;
+  }
+
+  // ===== 图标题 =====
+  svg += txt(procName + ' —— T-S 图火用损分析', W/2, 20, 16, '#0a2540', 'middle');
+
+  document.getElementById('chart').innerHTML = svg;
+
+  // ===== 结果数值计算 =====
+  let dsg, I;
+  if (proc === 'turbine') { dsg = irr; I = T0 * dsg; }
+  else if (proc === 'throttle') { dsg = irr * 1.8; I = T0 * dsg; }
+  else { dsg = Math.max((7.8 - 6.3) - (s1 - s2), 0); I = T0 * dsg; }
+
+  document.getElementById('resI').textContent = I.toFixed(1);
+  document.getElementById('resDS').textContent = dsg.toFixed(3);
+  document.getElementById('resT0').textContent = T0;
+}
+
+update();
+</script>
+</body>
+</html>

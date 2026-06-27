@@ -1,0 +1,34 @@
+@startuml
+' 燃气轮机工作循环流程图
+skinparam backgroundColor white
+skinparam defaultFontName "PingFang SC"
+skinparam rectangle {
+  BackgroundColor #F4F7FB
+  BorderColor    #3B5998
+  FontColor      #1A1A1A
+  RoundCorner    8
+}
+skinparam ArrowColor #3B5998
+skinparam ArrowFontSize 12
+
+left to right direction
+
+rectangle "大气\n空气" as air
+rectangle "压气机\nCompressor\n(增压+升温)" as comp
+rectangle "燃烧室\nCombustor\n+ 燃料" as combust
+rectangle "涡轮\nTurbine\n(膨胀做功)" as turb
+rectangle "输出\n(余功)" as out
+
+air --> comp : 吸入空气
+comp --> combust : 高压空气
+combust --> turb : 高温高压燃气
+turb --> comp : 带动压气机\n(约 1/2 ~ 2/3)
+turb --> out : 余功输出\n(约 1/3)
+
+note bottom of combust
+  四个连续过程:
+  压缩 → 加热 → 膨胀 → 排气
+  (Brayton 循环)
+end note
+
+@enduml

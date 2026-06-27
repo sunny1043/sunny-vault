@@ -1,0 +1,22 @@
+@startuml
+' 轴流式压气机结构剖面示意（转子 R 与静子 S 交错排列）
+skinparam backgroundColor white
+skinparam defaultFontName "PingFang SC"
+
+' 用 salt 表格横向排列 R/S 叶排，模拟机匣-轮毂结构
+salt
+{
+  {^ "机匣 ─── 径向间隙 ────" }
+  { R1 | S1 | R2 | S2 | R3 | S3 }
+  {^ "轮毂 ────────────────" }
+  {^ "转子 静子 转子 静子 转子 静子" }
+  {^ "←———— 一级 (R+S) ————→" }
+}
+
+note as N1
+  R = 工作轮 (转子)    S = 整流器 (静子)
+  一级 = 一排转子 + 一排静子
+  转子与机匣间有径向间隙 (漏气损失根源)
+end note
+
+@enduml
