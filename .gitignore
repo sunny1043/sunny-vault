@@ -12,3 +12,6 @@ Thumbs.db
 
 # Obsidian 回收站
 .trash/
+
+# Claude 会话导出脚本生成的临时文件
+_scripts/claude_sessions_*.md
