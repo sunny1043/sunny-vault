@@ -7,6 +7,8 @@ keywords: moc, study-map, linear-algebra
 
 # 线性代数 Study Map — 考研数学一
 
+> 🧭 首页 [[index|StudyVault]] · 相邻学科 [[LaTeX学习 MOC|LaTeX]] · [[工程热力学 MOC|工热]] · [[流体传动与控制 MOC|流体传动]]
+
 #dashboard #linear-algebra
 
 ## Overview

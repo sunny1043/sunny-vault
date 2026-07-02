@@ -1,0 +1,85 @@
+name: Build & Deploy Quartz Site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只允许一个部署跑，新推送取消进行中的旧部署
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0          # 给 created-modified-date 插件用 git 时间戳
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('quartz/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Cache Quartz plugins
+        uses: actions/cache@v4
+        with:
+          path: quartz/.quartz/plugins
+          key: ${{ runner.os }}-plugins-${{ hashFiles('quartz/quartz.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-plugins-
+
+      - name: Install dependencies
+        working-directory: quartz
+        run: npm ci
+
+      - name: Install Quartz plugins (retry to dodge transient git clone flakiness)
+        working-directory: quartz
+        run: |
+          # community 插件以 git clone 拉取，单次偶有失败；重试直到无新增失败
+          for i in 1 2 3 4 5; do
+            echo "::group::Install attempt $i"
+            npx quartz plugin install 2>&1 | tee /tmp/install-$i.log
+            echo "::endgroup::"
+            FAILED=$(grep -c "failed to clone" /tmp/install-$i.log || true)
+            echo "Attempt $i: $FAILED failed"
+            [ "$FAILED" = "0" ] && break
+            [ "$i" = "5" ] && { echo "::error::Plugin install still failing after 5 attempts"; exit 1; }
+            sleep 5
+          done
+
+      - name: Build site
+        # -d .. 让 Quartz 读上级 vault 根作为内容源
+        working-directory: quartz
+        run: npx quartz build -d .. -v
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: quartz/public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

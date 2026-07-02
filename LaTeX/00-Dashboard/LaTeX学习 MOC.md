@@ -4,6 +4,8 @@ keywords: moc, latex, study-map
 
 # LaTeX 学习 Map
 
+> 🧭 首页 [[index|StudyVault]] · 相邻学科 [[线性代数 MOC|线性代数]] · [[工程热力学 MOC|工程热力学]] · [[流体传动与控制 MOC|流体传动]]
+
 #dashboard #latex
 
 ## 学习路径

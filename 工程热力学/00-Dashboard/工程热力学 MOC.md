@@ -8,6 +8,8 @@ tags: [moc, thermodynamics]
 
 # 工程热力学 Study Map — 考研/期末
 
+> 🧭 首页 [[index|StudyVault]] · 相邻学科 [[线性代数 MOC|线性代数]] · [[LaTeX学习 MOC|LaTeX]] · [[流体传动与控制 MOC|流体传动]]
+
 #dashboard #thermodynamics
 
 ## Overview

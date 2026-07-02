@@ -14,6 +14,8 @@ tags:
 
 # 流体传动与控制 Study Map
 
+> 🧭 首页 [[index|StudyVault]] · 相邻学科 [[线性代数 MOC|线性代数]] · [[LaTeX学习 MOC|LaTeX]] · [[工程热力学 MOC|工程热力学]]
+
 #dashboard #fluid-power
 
 ## Overview

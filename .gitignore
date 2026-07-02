@@ -15,3 +15,13 @@ Thumbs.db
 
 # Claude 会话导出脚本生成的临时文件
 _scripts/claude_sessions_*.md
+
+# Quartz 构建产物（不入 git，由 CI / 本地构建生成）
+quartz/node_modules/
+quartz/public/
+quartz/.quartz-cache/
+quartz/.quartz/
+quartz/prof/
+quartz/tsconfig.tsbuildinfo
+# Quartz 自带的 demo 文档与示例内容，对 StudyVault 无用
+quartz/docs/
