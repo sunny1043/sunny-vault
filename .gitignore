@@ -14,7 +14,7 @@ Thumbs.db
 .trash/
 
 # Claude 会话导出脚本生成的临时文件
-_scripts/claude_sessions_*.md
+LLM上下文/_scripts/claude_sessions_*.md
 
 # Quartz 构建产物（不入 git，由 CI / 本地构建生成）
 quartz/node_modules/

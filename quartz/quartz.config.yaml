@@ -11,11 +11,11 @@ configuration:
   analytics:
     {}
   locale: zh-CN                # 中文界面
-  baseUrl: sunny1043.github.io/sunny-vault
+  baseUrl: https://sunny1043.github.io/sunny-vault/   # Quartz 5 要求：完整 URL + 末尾斜杠，否则站点路径解析错
   ignorePatterns:
-    - _skills
-    - _scripts
-    - _templates
+    - LLM上下文/_skills
+    - LLM上下文/_scripts
+    - LLM上下文/_templates
     - .obsidian
     - .git
     - .github
@@ -23,7 +23,7 @@ configuration:
     - AL-31F_压气机              # 冻结区，不发布
     - "*.zip"
     - "*.skill"
-    - 燃气轮机原理.md            # 根级 4.6 万字单文件，待拆分后再纳入
+    - 笔记/燃气轮机原理.md       # 4.6 万字单文件，待拆分后再纳入
   theme:
     fontOrigin: googleFonts
     cdnCaching: true
