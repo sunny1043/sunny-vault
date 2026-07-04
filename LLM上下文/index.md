@@ -1,6 +1,6 @@
 ---
 title: StudyVault
-description: Sunny 的理工科备考知识库 — 线性代数 / 工程热力学 / 流体传动与控制 / LaTeX
+description: Sunny 的理工科备考知识库 — 线性代数 / 概率论 / 工程热力学 / 流体传动与控制 / LaTeX
 type: moc
 subject: 全库
 date: 2026-07-02
@@ -37,6 +37,7 @@ tags:
 | 学科 | 进度 | 入口 | 题库 / 考点 |
 |------|:--:|:--|:--|
 | 线性代数 | ✅ 范本 | [[LLM上下文/线性代数/线性代数 MOC\|线性代数 MOC]] · [[LLM上下文/线性代数/Quick Reference\|线代速查]] | [[笔记/数学/线性代数/NN-Practice/考研线性代数_Practice\|考研线性代数_Practice]] · [[笔记/数学/线性代数/07-考研必考12问/考研必考12问\|考研必考 12 问]] |
+| 概率论 | ✅ 前 5 章 | [[LLM上下文/概率论/概率论 MOC\|概率论 MOC]] · [[LLM上下文/概率论/Quick Reference\|概率速查]] | — |
 
 ## 技能
 
