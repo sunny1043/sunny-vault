@@ -32,24 +32,24 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('quartz/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('assets/quartz/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
 
       - name: Cache Quartz plugins
         uses: actions/cache@v4
         with:
-          path: quartz/.quartz/plugins
-          key: ${{ runner.os }}-plugins-${{ hashFiles('quartz/quartz.lock.json') }}
+          path: assets/quartz/.quartz/plugins
+          key: ${{ runner.os }}-plugins-${{ hashFiles('assets/quartz/quartz.lock.json') }}
           restore-keys: |
             ${{ runner.os }}-plugins-
 
       - name: Install dependencies
-        working-directory: quartz
+        working-directory: assets/quartz
         run: npm ci
 
       - name: Install Quartz plugins (retry to dodge transient git clone flakiness)
-        working-directory: quartz
+        working-directory: assets/quartz
         run: |
           # community 插件以 git clone 拉取，单次偶有失败；重试直到无新增失败
           for i in 1 2 3 4 5; do
@@ -64,14 +64,14 @@ jobs:
           done
 
       - name: Build site
-        # -d .. 让 Quartz 读上级 vault 根作为内容源
-        working-directory: quartz
-        run: npx quartz build -d .. -v
+        # -d ../.. 让 Quartz 读上级 vault 根作为内容源（quartz 现在在 assets/ 下）
+        working-directory: assets/quartz
+        run: npx quartz build -d ../.. -v
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: quartz/public
+          path: assets/quartz/public
 
   deploy:
     needs: build

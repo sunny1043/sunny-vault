@@ -184,4 +184,4 @@ plt.show()
 ## Related Notes
 - [[笔记/技能/Python/02-数据结构/数据结构|数据结构]]
 - [[笔记/技能/Python/07-PyTorch基础/PyTorch与自动微分|PyTorch与自动微分]]
-- [[LLM上下文/PINN/PINN学习 MOC|PINN]]
+- [[assets/LLM上下文/PINN/PINN学习 MOC|PINN]]

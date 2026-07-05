@@ -266,4 +266,4 @@ print(f()); print(f())
 ---
 
 ## Related Notes
-- [[LLM上下文/Python/Python入门 MOC|MOC]]
+- [[assets/LLM上下文/Python/Python入门 MOC|MOC]]

@@ -200,4 +200,4 @@ mse_pde = (res ** 2).mean()
 
 ## Related Notes
 - [[笔记/技能/Python/06-科学计算/NumPy矢量运算|NumPy矢量运算]]
-- [[LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]
+- [[assets/LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]

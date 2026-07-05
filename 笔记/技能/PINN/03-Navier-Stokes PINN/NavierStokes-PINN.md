@@ -247,4 +247,4 @@ v = -torch.autograd.grad(psi, xyt, ..., create_graph=True)[0][:, 0:1]   # -ψ_x 
 ## Related Notes
 - [[笔记/技能/PINN/02-Burgers方程PINN/Burgers-PINN|Burgers-PINN]]
 - [[笔记/技能/PINN/04-反问题与参数识别/反问题PINN|反问题PINN]]
-- [[LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]
+- [[assets/LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]

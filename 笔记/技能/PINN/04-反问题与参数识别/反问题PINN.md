@@ -180,4 +180,4 @@ $$
 ## Related Notes
 - [[笔记/技能/PINN/03-Navier-Stokes PINN/NavierStokes-PINN|NavierStokes PINN]]
 - [[笔记/技能/PINN/01-PINN原理/PINN三件套与残差损失|PINN 三件套]]
-- [[LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]
+- [[assets/LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]

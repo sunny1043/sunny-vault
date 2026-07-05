@@ -186,4 +186,4 @@ $$
 ## Related Notes
 - [[笔记/技能/Python/07-PyTorch基础/PyTorch与自动微分|PyTorch 与自动微分]]
 - [[笔记/技能/PINN/02-Burgers方程PINN/Burgers-PINN|Burgers 方程 PINN]]
-- [[LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]
+- [[assets/LLM上下文/PINN/PINN学习 MOC|PINN 学习 MOC]]

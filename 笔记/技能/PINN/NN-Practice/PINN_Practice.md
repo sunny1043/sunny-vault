@@ -169,4 +169,4 @@ Burgers PINN 用了三类配点 `xf, xb, xi`，分别对应哪三种约束？各
 - [[笔记/技能/PINN/02-Burgers方程PINN/Burgers-PINN|Burgers PINN]]
 - [[笔记/技能/PINN/03-Navier-Stokes PINN/NavierStokes-PINN|NS PINN]]
 - [[笔记/技能/PINN/04-反问题与参数识别/反问题PINN|反问题PINN]]
-- [[LLM上下文/PINN/PINN学习 MOC|MOC]]
+- [[assets/LLM上下文/PINN/PINN学习 MOC|MOC]]

@@ -10,7 +10,7 @@ tags: [practice, thermodynamics]
 
 #practice #thermodynamics
 
-> 🧭 ← [[LLM上下文/工程热力学/工程热力学 MOC|工程热力学 MOC]] · [[LLM上下文/工程热力学/Quick Reference|Quick Reference]]
+> 🧭 ← [[assets/LLM上下文/工程热力学/工程热力学 MOC|工程热力学 MOC]] · [[assets/LLM上下文/工程热力学/Quick Reference|Quick Reference]]
 
 ## Related Notes
 - [[笔记/工程学/工程热力学/第2章_热力学第一定律|第2章_热力学第一定律]], [[笔记/工程学/工程热力学/第3章_气体的热力性质和热力过程|第3章_气体的热力性质和热力过程]], [[笔记/工程学/工程热力学/第4章_热力学第二定律|第4章_热力学第二定律]], [[笔记/工程学/工程热力学/第6章_气体动力循环|第6章_气体动力循环]], [[笔记/工程学/工程热力学/第9章_水蒸气性质和蒸汽动力循环|第9章_水蒸气性质和蒸汽动力循环]]
