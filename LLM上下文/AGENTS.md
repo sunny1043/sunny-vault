@@ -119,6 +119,7 @@ difficulty: ★★☆                       # 仅 exam-q 必填
 | PINN | `pinn` |
 | 工程热力学 | `thermodynamics` |
 | 流体传动与控制 | `fluid-power` |
+| 燃气轮机原理 | `gas-turbine` |
 | 概率论 | `probability` |
 | 英语 | `english` |
 
